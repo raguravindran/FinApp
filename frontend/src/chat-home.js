@@ -127,18 +127,39 @@ class ChatHome extends LitElement {
       margin-right: auto;
     }
 
+    .meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.7rem;
+      text-align: left;
+      margin-bottom: 0.35rem;
+    }
+
     .label {
-      display: inline-block;
       font-size: 0.78rem;
       text-transform: uppercase;
       letter-spacing: 0.06em;
       font-weight: 700;
       color: #1d4ca8;
-      margin-bottom: 0.4rem;
+      line-height: 1.2;
     }
 
     .message-card.user .label {
       color: #dfe9ff;
+    }
+
+    .timestamp {
+      font-size: 0.74rem;
+      line-height: 1.2;
+      color: #4f6591;
+      opacity: 0.92;
+      white-space: nowrap;
+    }
+
+    .message-card.user .timestamp {
+      color: #dfe9ff;
+      opacity: 0.95;
     }
 
     .md p {
@@ -250,6 +271,18 @@ class ChatHome extends LitElement {
       },
     ];
     this.persistHistory();
+  }
+
+  formatTimestamp(timestamp) {
+    const date = timestamp ? new Date(timestamp) : new Date();
+    if (Number.isNaN(date.getTime())) {
+      return '';
+    }
+
+    return new Intl.DateTimeFormat(undefined, {
+      hour: 'numeric',
+      minute: '2-digit',
+    }).format(date);
   }
 
   handleStorageChange(event) {
@@ -404,7 +437,10 @@ class ChatHome extends LitElement {
             ? this.conversation.map(
                 (entry) => html`
                   <div class="message-card ${entry.role}">
-                    <div class="label">${entry.role === 'user' ? 'You' : 'Penny'}</div>
+                    <div class="meta">
+                      <div class="label">${entry.role === 'user' ? 'You' : 'Penny'}</div>
+                      <div class="timestamp">${this.formatTimestamp(entry.timestamp)}</div>
+                    </div>
                     <div class="md">${unsafeHTML(this.renderMarkdown(entry.content))}</div>
                   </div>
                 `
