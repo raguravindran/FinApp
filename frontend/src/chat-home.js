@@ -463,8 +463,8 @@ class ChatHome extends LitElement {
   render() {
     return html`
       <div class="layout">
-        <a class="nav" href="/">← Back to EMI Studio</a>
-        <h1>FinApp Chat</h1>
+        <a class="nav" href="/">← Back to Home</a>
+        <h1>Penny Chat</h1>
         <p class="intro">
           Chat with Penny about your finances. Conversation history appears above, and the message
           composer stays at the bottom (WhatsApp-style).

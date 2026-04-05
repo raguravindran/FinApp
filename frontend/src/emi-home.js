@@ -93,8 +93,8 @@ class EmiHome extends LitElement {
   render() {
     return html`
       <section class="hero">
-        <div class="logo" aria-label="FinApp logo placeholder">LOGO</div>
-        <h1>EMI Studio</h1>
+        <div class="logo" aria-label="Penny Personal Finance logo placeholder">LOGO</div>
+        <h1>Penny Personal Finance</h1>
         <p class="description">
           From scattered finances to structured goals—this platform builds your complete financial
           game plan. Know where you stand, what you need, and exactly how to get there.
@@ -105,7 +105,7 @@ class EmiHome extends LitElement {
 
       <section class="panel">
         <h2>Prefer conversational planning?</h2>
-        <p>Use FinApp Chat to ask finance-aware questions with backend context enrichment.</p>
+        <p>Use Penny Chat to ask finance-aware questions with backend context enrichment.</p>
         <p><a href="/chat">Open Chat Workspace →</a></p>
       </section>
 
