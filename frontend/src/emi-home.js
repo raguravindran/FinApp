@@ -67,6 +67,12 @@ class EmiHome extends LitElement {
       color: #415c8b;
     }
 
+    a {
+      color: #1d53b7;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
     emi-calculator {
       margin-top: 0.95rem;
       max-width: 100%;
@@ -93,6 +99,14 @@ class EmiHome extends LitElement {
           From scattered finances to structured goals—this platform builds your complete financial
           game plan. Know where you stand, what you need, and exactly how to get there.
         </p>
+      </section>
+
+
+
+      <section class="panel">
+        <h2>Prefer conversational planning?</h2>
+        <p>Use FinApp Chat to ask finance-aware questions with backend context enrichment.</p>
+        <p><a href="/chat">Open Chat Workspace →</a></p>
       </section>
 
       <section class="panel">

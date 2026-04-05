@@ -1,9 +1,17 @@
-# FinApp EMI Calculator (Django + Lit)
+# FinApp (Lit + Node/TypeScript)
 
-This repository contains a full-stack EMI calculator package:
+FinApp now uses a JavaScript-first stack end-to-end:
 
-- **Backend:** Django API for simple-interest EMI calculation.
-- **Frontend:** Lit web component served with Vite.
+- **Frontend:** Lit web components served by Vite.
+- **Backend:** Node.js + TypeScript API for EMI and LLM chat orchestration.
+- **Netlify:** Static frontend + serverless functions for `/api/emi/` and `/api/chat`.
+
+## Features
+
+- Simple-interest EMI calculator API.
+- Conversational chat UI at `/chat`.
+- Finance-aware backend routing (general vs account-specific vs calculation-heavy).
+- Server-side context wrapping before LLM calls (no direct client-to-LLM key exposure).
 
 ## Formula
 
@@ -18,66 +26,50 @@ Where:
 - `T` = tenure in years (`tenure_months / 12`)
 - `N` = tenure in months
 
-## Deploy frontend to Netlify
+## Local setup
 
-Netlify cannot run a long-lived Django server process. To make deploys work, this repo now includes a **Netlify Function** for EMI calculation at:
-
-- `/.netlify/functions/emi`
-- Redirected from `/api/emi/` via `netlify.toml`
-
-### What is deployed on Netlify
-
-- Static Lit frontend (`frontend/dist`)
-- Serverless function (`frontend/netlify/functions/emi.js`) for EMI API calls
-
-### Build settings (already in `netlify.toml`)
-
-- **Base directory:** `frontend`
-- **Build command:** `npm run build`
-- **Publish directory:** `dist`
-- **Functions directory:** `netlify/functions`
-
-### API URL behavior
-
-- **On Netlify:** frontend calls `/api/emi/` (same origin), and redirect maps it to the Netlify Function.
-- **Local dev with Django backend:** set `VITE_API_BASE_URL` (see `frontend/.env.example`) to your backend origin (for example `http://127.0.0.1:8000`).
-
-### Deploy steps
-
-1. In Netlify, import this repository.
-2. Keep build settings from `netlify.toml`.
-3. Deploy.
-
-## One-command local setup (macOS)
-
-From repository root, run:
+From repository root:
 
 ```bash
 ./setup_mac.sh
 ```
 
-This script creates `backend/.venv`, installs backend dependencies, runs migrations, and installs frontend dependencies.
+Or manually:
 
-## Backend setup (Django)
+### Backend (Node + TypeScript)
 
 ```bash
 cd backend
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver
+npm install
+cp .env.example .env
+# add GEMINI_API_KEY in .env
+npm run dev
 ```
 
-Backend will run at `http://127.0.0.1:8000`.
+Backend runs at `http://127.0.0.1:8787`.
 
-### API endpoint
+### Frontend (Lit + Vite)
 
-- **Method:** `POST`
-- **URL:** `/api/emi/`
-- **Content-Type:** `application/json`
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-Request payload:
+Frontend runs at `http://localhost:5173`.
+
+To target local backend from frontend dev, set:
+
+```bash
+# frontend/.env
+VITE_API_BASE_URL=http://127.0.0.1:8787
+```
+
+## API endpoints
+
+### POST `/api/emi/`
+
+Request:
 
 ```json
 {
@@ -87,7 +79,7 @@ Request payload:
 }
 ```
 
-Success response (example):
+Response:
 
 ```json
 {
@@ -104,28 +96,42 @@ Success response (example):
 }
 ```
 
-Validation errors return `400` with `ok: false` and field-level `errors`.
+### POST `/api/chat`
 
-### Run backend tests
+Request:
 
-```bash
-cd backend
-python manage.py test
+```json
+{
+  "query": "How should I plan for a house down payment in 5 years?",
+  "userContext": {
+    "goals": ["house down payment"],
+    "monthlyIncome": 9500,
+    "monthlyExpenses": 5200,
+    "riskProfile": "medium"
+  }
+}
 ```
 
-## Frontend setup (Lit + Vite)
+Response includes:
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
+- `answer`
+- `route` (`general_search`, `finance_account_specific`, or `calculation_heavy`)
+- `assumptions`
 
-Frontend will run at `http://localhost:5173` and calls backend API at `http://127.0.0.1:8000/api/emi/`.
+## Netlify deploy
 
-## Build frontend
+`netlify.toml` is configured for:
 
-```bash
-cd frontend
-npm run build
-```
+- build base `frontend`
+- static publish from `frontend/dist`
+- function directory `frontend/netlify/functions`
+- API redirects:
+  - `/api/emi/` -> `/.netlify/functions/emi`
+  - `/api/chat` -> `/.netlify/functions/chat`
+- `/chat` -> SPA shell (`/index.html`)
+
+## Secrets and security
+
+- Never expose provider keys in frontend code.
+- Store `GEMINI_API_KEY` in backend `.env` (local) and Netlify environment vars (deploy).
+- All prompt enrichment and tool routing are done server-side.

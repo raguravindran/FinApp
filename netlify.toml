@@ -13,3 +13,13 @@
   from = "/api/emi/"
   to = "/.netlify/functions/emi"
   status = 200
+
+[[redirects]]
+  from = "/api/chat"
+  to = "/.netlify/functions/chat"
+  status = 200
+
+[[redirects]]
+  from = "/chat"
+  to = "/index.html"
+  status = 200
