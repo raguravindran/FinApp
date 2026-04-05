@@ -20,31 +20,33 @@ Where:
 
 ## Deploy frontend to Netlify
 
-This repository contains both backend and frontend. Netlify will deploy only the frontend static site.
+Netlify cannot run a long-lived Django server process. To make deploys work, this repo now includes a **Netlify Function** for EMI calculation at:
 
-### 1) Add a `netlify.toml`
+- `/.netlify/functions/emi`
+- Redirected from `/api/emi/` via `netlify.toml`
 
-This repo already includes `netlify.toml` configured with:
+### What is deployed on Netlify
+
+- Static Lit frontend (`frontend/dist`)
+- Serverless function (`frontend/netlify/functions/emi.js`) for EMI API calls
+
+### Build settings (already in `netlify.toml`)
 
 - **Base directory:** `frontend`
 - **Build command:** `npm run build`
 - **Publish directory:** `dist`
+- **Functions directory:** `netlify/functions`
 
-### 2) Configure backend API URL for production
+### API URL behavior
 
-In Netlify site settings, add environment variable:
+- **On Netlify:** frontend calls `/api/emi/` (same origin), and redirect maps it to the Netlify Function.
+- **Local dev with Django backend:** set `VITE_API_BASE_URL` (see `frontend/.env.example`) to your backend origin (for example `http://127.0.0.1:8000`).
 
-- `VITE_API_BASE_URL` = your deployed backend origin (example: `https://api.yourdomain.com`)
+### Deploy steps
 
-The frontend uses this value at build time and calls `${VITE_API_BASE_URL}/api/emi/`.
-
-For local development, copy `frontend/.env.example` to `frontend/.env` and adjust if needed.
-
-### 3) Connect repository and deploy
-
-- In Netlify: **Add new project** → import this repository.
-- Build settings are picked from `netlify.toml`.
-- Trigger deploy.
+1. In Netlify, import this repository.
+2. Keep build settings from `netlify.toml`.
+3. Deploy.
 
 ## One-command local setup (macOS)
 

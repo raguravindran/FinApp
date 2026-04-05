@@ -90,8 +90,9 @@ class EmiCalculator extends LitElement {
     this.result = null;
 
     try {
-      const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000').replace(/\/$/, '');
-      const response = await fetch(`${apiBaseUrl}/api/emi/`, {
+      const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+      const endpoint = apiBaseUrl ? `${apiBaseUrl}/api/emi/` : '/api/emi/';
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

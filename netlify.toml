@@ -5,3 +5,11 @@
 
 [build.environment]
   NODE_VERSION = "20"
+
+[functions]
+  directory = "netlify/functions"
+
+[[redirects]]
+  from = "/api/emi/"
+  to = "/.netlify/functions/emi"
+  status = 200
