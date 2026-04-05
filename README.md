@@ -131,6 +131,36 @@ Response includes:
   - `/api/chat` -> `/.netlify/functions/chat`
 - `/chat` -> SPA shell (`/index.html`)
 
+## Chat history and context retention
+
+If you want a true ChatGPT-style experience (conversation history that survives refreshes and new requests), you should persist chat messages outside of memory.
+
+### Do you need a database?
+
+- **For production-quality chat memory:** yes, recommended.
+- **For quick prototype only:** you can start with browser storage or short-lived sessions, but it is not reliable for long-term continuity.
+
+### What Netlify supports for persistence
+
+Netlify Functions are stateless between invocations, so in-memory variables are not durable chat storage. Common options:
+
+- **External DB (most common):** Supabase/Postgres, Neon, PlanetScale, MongoDB Atlas, etc.
+- **Netlify Blobs:** good for lightweight keyed storage and prototypes.
+- **Netlify Connect / external backends:** for syncing or integrating other data sources.
+
+### Can we store in session for now?
+
+Yes, for an MVP:
+
+- **Client-side sessionStorage/localStorage:** easiest, no backend DB required.
+- **Server-side session in function memory:** **not recommended**, because cold starts and scaling lose state.
+
+Suggested phased rollout:
+
+1. Start with `sessionStorage` (or `localStorage`) + send recent messages with each `/api/chat` call.
+2. Move to DB-backed conversation tables (`conversations`, `messages`) once multi-device/history is required.
+3. Add user auth and load conversation history on login.
+
 ## Secrets and security
 
 - Never expose provider keys in frontend code.

@@ -1,11 +1,14 @@
 import { LitElement, css, html } from 'lit';
 
 class ChatHome extends LitElement {
+  static CHAT_HISTORY_KEY = 'finapp.chat.history.v1';
+
   static properties = {
     message: { state: true },
     loading: { state: true },
     error: { state: true },
-    reply: { state: true },
+    conversation: { state: true },
+    storageMode: { state: true },
   };
 
   constructor() {
@@ -13,7 +16,13 @@ class ChatHome extends LitElement {
     this.message = '';
     this.loading = false;
     this.error = '';
-    this.reply = '';
+    this.conversation = [];
+    this.storageMode = 'session';
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.loadHistory();
   }
 
   static styles = css`
@@ -74,13 +83,42 @@ class ChatHome extends LitElement {
       cursor: not-allowed;
     }
 
-    .reply {
+    .history {
+      margin-top: 1rem;
+      display: grid;
+      gap: 0.75rem;
+      max-height: 420px;
+      overflow-y: auto;
+      padding-right: 0.25rem;
+    }
+
+    .message-card {
       margin-top: 1rem;
       border: 1px solid #cfddff;
       border-radius: 12px;
       padding: 0.75rem;
       background: #f5f9ff;
       white-space: pre-wrap;
+    }
+
+    .message-card.user {
+      border-color: #93b4ff;
+      background: #edf4ff;
+    }
+
+    .message-card.assistant {
+      border-color: #cfe2ff;
+      background: #f8fbff;
+    }
+
+    .label {
+      display: inline-block;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 700;
+      color: #1d4ca8;
+      margin-bottom: 0.4rem;
     }
 
     .error {
@@ -97,16 +135,97 @@ class ChatHome extends LitElement {
       text-decoration: none;
       font-weight: 600;
     }
+
+    .toolbar {
+      margin-top: 0.8rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: center;
+    }
+
+    select {
+      border: 1px solid #bfd2ff;
+      border-radius: 10px;
+      padding: 0.48rem 0.6rem;
+      font: inherit;
+      color: #1a3769;
+      background: #fff;
+    }
+
+    button.secondary {
+      background: #e8f0ff;
+      color: #163a77;
+      border: 1px solid #c5d8ff;
+    }
   `;
 
+  getStorage() {
+    return this.storageMode === 'local' ? window.localStorage : window.sessionStorage;
+  }
+
+  loadHistory() {
+    const persistedMode = window.localStorage.getItem('finapp.chat.storage.mode');
+    if (persistedMode === 'local' || persistedMode === 'session') {
+      this.storageMode = persistedMode;
+    }
+
+    try {
+      const raw = this.getStorage().getItem(ChatHome.CHAT_HISTORY_KEY);
+      this.conversation = raw ? JSON.parse(raw) : [];
+    } catch {
+      this.conversation = [];
+    }
+  }
+
+  persistHistory() {
+    this.getStorage().setItem(ChatHome.CHAT_HISTORY_KEY, JSON.stringify(this.conversation));
+  }
+
+  appendMessage(role, content) {
+    this.conversation = [
+      ...this.conversation,
+      {
+        role,
+        content,
+        timestamp: new Date().toISOString(),
+      },
+    ];
+    this.persistHistory();
+  }
+
+  handleStorageChange(event) {
+    const nextMode = event.target.value;
+    if (nextMode !== 'local' && nextMode !== 'session') {
+      return;
+    }
+
+    const currentHistory = [...this.conversation];
+    this.storageMode = nextMode;
+    window.localStorage.setItem('finapp.chat.storage.mode', nextMode);
+    this.getStorage().setItem(ChatHome.CHAT_HISTORY_KEY, JSON.stringify(currentHistory));
+    const staleStorage =
+      nextMode === 'local' ? window.sessionStorage : window.localStorage;
+    staleStorage.removeItem(ChatHome.CHAT_HISTORY_KEY);
+    this.conversation = currentHistory;
+  }
+
+  clearChat() {
+    this.conversation = [];
+    this.error = '';
+    this.getStorage().removeItem(ChatHome.CHAT_HISTORY_KEY);
+  }
+
   async sendMessage() {
-    if (!this.message.trim()) {
+    const query = this.message.trim();
+    if (!query) {
       return;
     }
 
     this.loading = true;
     this.error = '';
-    this.reply = '';
+    this.message = '';
+    this.appendMessage('user', query);
 
     try {
       const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
@@ -116,10 +235,11 @@ class ChatHome extends LitElement {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          query: this.message,
+          query,
           userContext: {
             goals: ['build emergency fund'],
             riskProfile: 'medium',
+            recentMessages: this.conversation.slice(-6),
           },
         }),
       });
@@ -127,12 +247,14 @@ class ChatHome extends LitElement {
       const payload = await response.json();
       if (!response.ok || !payload.ok) {
         this.error = 'Unable to get chat response right now.';
+        this.appendMessage('assistant', 'Sorry, I could not fetch a response right now.');
         return;
       }
 
-      this.reply = payload.data?.answer || 'No answer available.';
+      this.appendMessage('assistant', payload.data?.answer || 'No answer available.');
     } catch {
       this.error = 'Network error while calling the chat API.';
+      this.appendMessage('assistant', 'Sorry, there was a network error while contacting the API.');
     } finally {
       this.loading = false;
     }
@@ -156,12 +278,40 @@ class ChatHome extends LitElement {
           placeholder="Example: Based on my goals, how much should I invest monthly?"
         ></textarea>
 
-        <button @click=${this.sendMessage} ?disabled=${this.loading}>
-          ${this.loading ? 'Thinking…' : 'Ask FinApp'}
-        </button>
+        <div class="toolbar">
+          <button @click=${this.sendMessage} ?disabled=${this.loading}>
+            ${this.loading ? 'Thinking…' : 'Ask FinApp'}
+          </button>
+
+          <label for="storage-select">Store chat in:</label>
+          <select
+            id="storage-select"
+            .value=${this.storageMode}
+            @change=${this.handleStorageChange}
+            ?disabled=${this.loading}
+          >
+            <option value="session">Session storage (tab only)</option>
+            <option value="local">Local storage (persist across tabs)</option>
+          </select>
+
+          <button class="secondary" @click=${this.clearChat} ?disabled=${this.loading}>
+            Clear history
+          </button>
+        </div>
 
         ${this.error ? html`<div class="error">${this.error}</div>` : ''}
-        ${this.reply ? html`<div class="reply">${this.reply}</div>` : ''}
+        <div class="history">
+          ${this.conversation.length
+            ? this.conversation.map(
+                (entry) => html`
+                  <div class="message-card ${entry.role}">
+                    <div class="label">${entry.role === 'user' ? 'You' : 'FinApp AI'}</div>
+                    <div>${entry.content}</div>
+                  </div>
+                `
+              )
+            : html`<div class="message-card assistant">No messages yet. Start chatting above.</div>`}
+        </div>
       </div>
     `;
   }
