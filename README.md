@@ -43,6 +43,7 @@ cd backend
 npm install
 cp .env.example .env
 # add GEMINI_API_KEY in .env
+# optional: set GEMINI_MODEL (default: gemini-2.0-flash, with fallback list)
 npm run dev
 ```
 
@@ -134,4 +135,5 @@ Response includes:
 
 - Never expose provider keys in frontend code.
 - Store `GEMINI_API_KEY` in backend `.env` (local) and Netlify environment vars (deploy).
+- Optionally set `GEMINI_MODEL` to force a specific model; otherwise fallback models are tried automatically.
 - All prompt enrichment and tool routing are done server-side.

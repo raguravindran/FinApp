@@ -21,6 +21,13 @@ const CALCULATION_HINTS = [
   'compound',
 ];
 
+const DEFAULT_MODELS = ['gemini-2.0-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-flash'];
+
+function candidateModels() {
+  const preferred = String(process.env.GEMINI_MODEL || '').trim();
+  return preferred ? [preferred, ...DEFAULT_MODELS.filter((model) => model !== preferred)] : DEFAULT_MODELS;
+}
+
 function routeIntent(query = '') {
   const normalized = String(query).toLowerCase();
 
@@ -53,24 +60,34 @@ function buildEnvelope(payload, route) {
 }
 
 async function askGemini(apiKey, prompt) {
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-      }),
-    },
-  );
+  let lastError = '';
 
-  if (!response.ok) {
+  for (const model of candidateModels()) {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+        }),
+      },
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      return data?.candidates?.[0]?.content?.parts?.[0]?.text || 'No response text returned by Gemini.';
+    }
+
     const body = await response.text();
-    return `LLM provider error: ${response.status} ${body}`;
+    lastError = `model=${model} status=${response.status} body=${body}`;
+
+    if (response.status !== 404) {
+      break;
+    }
   }
 
-  const data = await response.json();
-  return data?.candidates?.[0]?.content?.parts?.[0]?.text || 'No response text returned by Gemini.';
+  return `LLM provider error: ${lastError}`;
 }
 
 export async function handler(event) {
