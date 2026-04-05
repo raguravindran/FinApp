@@ -61,7 +61,7 @@ class ChatHome extends LitElement {
       font-size: 1.5rem;
     }
 
-    p {
+    .intro {
       color: #425c8d;
       line-height: 1.5;
     }
@@ -144,6 +144,7 @@ class ChatHome extends LitElement {
     .md p {
       margin: 0.25rem 0 0;
       line-height: 1.48;
+      color: inherit;
     }
 
     .md ul,
@@ -393,7 +394,7 @@ class ChatHome extends LitElement {
       <div class="layout">
         <a class="nav" href="/">← Back to EMI Studio</a>
         <h1>FinApp Chat</h1>
-        <p>
+        <p class="intro">
           Chat with Penny about your finances. Conversation history appears above, and the message
           composer stays at the bottom (WhatsApp-style).
         </p>
