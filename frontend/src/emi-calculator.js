@@ -23,18 +23,19 @@ class EmiCalculator extends LitElement {
   static styles = css`
     :host {
       display: block;
-      max-width: 480px;
-      margin: 2rem auto;
+      max-width: 680px;
+      margin: 0.6rem auto 0;
       padding: 1rem;
       font-family: Arial, sans-serif;
-      border: 1px solid #d0d7de;
+      border: 1px solid #d0dcf9;
       border-radius: 12px;
-      background: #ffffff;
+      background: linear-gradient(180deg, #ffffff, #f8fbff);
     }
 
     h1 {
       font-size: 1.25rem;
       margin-top: 0;
+      color: #123778;
     }
 
     form {
@@ -58,7 +59,7 @@ class EmiCalculator extends LitElement {
       border: none;
       border-radius: 8px;
       padding: 0.6rem 0.8rem;
-      background: #0a66ff;
+      background: linear-gradient(135deg, #2767ea, #1f4fb7);
       color: white;
       cursor: pointer;
       font-weight: 600;
@@ -80,6 +81,12 @@ class EmiCalculator extends LitElement {
       border-radius: 8px;
       background: #f0f7ff;
       border: 1px solid #bfdbfe;
+    }
+
+    .hint {
+      margin-top: 0.7rem;
+      font-size: 0.9rem;
+      color: #4a5f89;
     }
   `;
 
@@ -173,6 +180,10 @@ class EmiCalculator extends LitElement {
             </div>
           `
         : ''}
+
+      <p class="hint">
+        This calculator currently uses a simple-interest model as an easy starting point.
+      </p>
     `;
   }
 }
