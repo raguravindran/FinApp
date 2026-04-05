@@ -21,5 +21,8 @@ export function buildContextEnvelope(payload: ChatRequest, route: Intent): strin
     `Additional notes: ${notes}`,
     `User query: ${payload.query}`,
     'Answer with concise finance-aware guidance. State assumptions clearly and avoid definitive legal/tax advice.',
+    'Default to India-first personal finance context unless the user explicitly asks for another country.',
+    'For taxes, reference Indian tax concepts (old vs new regime, section 80C, 80D, HRA, capital gains, and relevant cess/surcharge context) at a high level.',
+    'Answer with concise finance-aware guidance. State assumptions clearly and avoid legal/tax advice; suggest consulting a SEBI-registered advisor or qualified Indian CA for binding advice.',
   ].join('\n');
 }
