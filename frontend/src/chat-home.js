@@ -61,7 +61,7 @@ class ChatHome extends LitElement {
       font-size: 1.5rem;
     }
 
-    p {
+    .intro {
       color: #425c8d;
       line-height: 1.5;
     }
@@ -127,23 +127,45 @@ class ChatHome extends LitElement {
       margin-right: auto;
     }
 
+    .meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.7rem;
+      text-align: left;
+      margin-bottom: 0.35rem;
+    }
+
     .label {
-      display: inline-block;
       font-size: 0.78rem;
       text-transform: uppercase;
       letter-spacing: 0.06em;
       font-weight: 700;
       color: #1d4ca8;
-      margin-bottom: 0.4rem;
+      line-height: 1.2;
     }
 
     .message-card.user .label {
       color: #dfe9ff;
     }
 
+    .timestamp {
+      font-size: 0.74rem;
+      line-height: 1.2;
+      color: #4f6591;
+      opacity: 0.92;
+      white-space: nowrap;
+    }
+
+    .message-card.user .timestamp {
+      color: #dfe9ff;
+      opacity: 0.95;
+    }
+
     .md p {
       margin: 0.25rem 0 0;
       line-height: 1.48;
+      color: inherit;
     }
 
     .md ul,
@@ -249,6 +271,18 @@ class ChatHome extends LitElement {
       },
     ];
     this.persistHistory();
+  }
+
+  formatTimestamp(timestamp) {
+    const date = timestamp ? new Date(timestamp) : new Date();
+    if (Number.isNaN(date.getTime())) {
+      return '';
+    }
+
+    return new Intl.DateTimeFormat(undefined, {
+      hour: 'numeric',
+      minute: '2-digit',
+    }).format(date);
   }
 
   handleStorageChange(event) {
@@ -391,9 +425,9 @@ class ChatHome extends LitElement {
   render() {
     return html`
       <div class="layout">
-        <a class="nav" href="/">← Back to EMI Studio</a>
-        <h1>FinApp Chat</h1>
-        <p>
+        <a class="nav" href="/">← Back to Home</a>
+        <h1>Penny Chat</h1>
+        <p class="intro">
           Chat with Penny about your finances. Conversation history appears above, and the message
           composer stays at the bottom (WhatsApp-style).
         </p>
@@ -403,7 +437,10 @@ class ChatHome extends LitElement {
             ? this.conversation.map(
                 (entry) => html`
                   <div class="message-card ${entry.role}">
-                    <div class="label">${entry.role === 'user' ? 'You' : 'Penny'}</div>
+                    <div class="meta">
+                      <div class="label">${entry.role === 'user' ? 'You' : 'Penny'}</div>
+                      <div class="timestamp">${this.formatTimestamp(entry.timestamp)}</div>
+                    </div>
                     <div class="md">${unsafeHTML(this.renderMarkdown(entry.content))}</div>
                   </div>
                 `

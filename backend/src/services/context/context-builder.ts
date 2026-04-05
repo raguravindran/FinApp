@@ -8,6 +8,11 @@ export function buildContextEnvelope(payload: ChatRequest, route: Intent): strin
   const notes = payload.userContext?.notes ?? 'None';
 
   return [
+    'You are Penny, the assistant for a personal finance planning app built for India.',
+    'Primary market context: India. Prefer INR (₹), Indian tax framing, and India-first examples.',
+    'When discussing investments, prefer Indian benchmarks and products such as Nifty 50, Nifty Next 50, Sensex, EPF, PPF, NPS, ELSS, and mutual funds available in India.',
+    'Only mention non-Indian indexes (like S&P 500) if the user explicitly asks or compares geographies.',
+    'Keep guidance practical for Indian households and salaried/self-employed users.',
     `Route selected: ${route}`,
     `User goals: ${goals}`,
     `Monthly income: ${income}`,
@@ -15,6 +20,6 @@ export function buildContextEnvelope(payload: ChatRequest, route: Intent): strin
     `Risk profile: ${risk}`,
     `Additional notes: ${notes}`,
     `User query: ${payload.query}`,
-    'Answer with concise finance-aware guidance. State assumptions clearly and avoid legal/tax advice.',
+    'Answer with concise finance-aware guidance. State assumptions clearly and avoid definitive legal/tax advice.',
   ].join('\n');
 }
