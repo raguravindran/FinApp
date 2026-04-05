@@ -18,6 +18,34 @@ Where:
 - `T` = tenure in years (`tenure_months / 12`)
 - `N` = tenure in months
 
+## Deploy frontend to Netlify
+
+This repository contains both backend and frontend. Netlify will deploy only the frontend static site.
+
+### 1) Add a `netlify.toml`
+
+This repo already includes `netlify.toml` configured with:
+
+- **Base directory:** `frontend`
+- **Build command:** `npm run build`
+- **Publish directory:** `dist`
+
+### 2) Configure backend API URL for production
+
+In Netlify site settings, add environment variable:
+
+- `VITE_API_BASE_URL` = your deployed backend origin (example: `https://api.yourdomain.com`)
+
+The frontend uses this value at build time and calls `${VITE_API_BASE_URL}/api/emi/`.
+
+For local development, copy `frontend/.env.example` to `frontend/.env` and adjust if needed.
+
+### 3) Connect repository and deploy
+
+- In Netlify: **Add new project** → import this repository.
+- Build settings are picked from `netlify.toml`.
+- Trigger deploy.
+
 ## One-command local setup (macOS)
 
 From repository root, run:
