@@ -18,6 +18,16 @@ Where:
 - `T` = tenure in years (`tenure_months / 12`)
 - `N` = tenure in months
 
+## One-command local setup (macOS)
+
+From repository root, run:
+
+```bash
+./setup_mac.sh
+```
+
+This script creates `backend/.venv`, installs backend dependencies, runs migrations, and installs frontend dependencies.
+
 ## Backend setup (Django)
 
 ```bash
